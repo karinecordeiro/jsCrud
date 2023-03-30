@@ -20,21 +20,36 @@ const criarNovaLinha = (nome, email, id) => {
 const tabela = document.querySelector('[data-tabela]'); //trazer data do html
 
 //para deletar linha da tabela e cliente do api
-tabela.addEventListener('click', (evento)=> {
+tabela.addEventListener('click', async (evento)=> { //função assicrona
     let ehBotaoDeletar = evento.target.className === 'botao-simples botao-simples--excluir'
     if (ehBotaoDeletar){
+        try{
         const linhaCliente = evento.target.closest('[data-id]'); //trazer o elemento da linha para ser excluido
         let id = linhaCliente.dataset.id; //o id 
-        clienteService.removeCliente(id) //deletar cliente da api
-        .then( ()=> {
-            linhaCliente.remove(); //remover a linha inteira da tabela imediatamente
-        })
-    }
+        //com await a função se comporta como estruturada
+        await clienteService.removeCliente(id) //deletar cliente da api
+        linhaCliente.remove()//remover a linha inteira da tabela imediatamente
+        }
+        catch(erro){
+            console.log(erro)
+            window.location.href = '../telas/erro.html'
+        }
+    }    
 })
 
-clienteService.listaClientes()
-.then(data => {
-        data.forEach(elemento => {
-        tabela.appendChild(criarNovaLinha(elemento.nome, elemento.email, elemento.id)); // colocar os filhos (linha) no pai (tabela)
+const render = async () => {
+    try{
+        const listaClientes = await clienteService.listaClientes()
+
+        listaClientes.forEach(elemento => {
+        tabela.appendChild(criarNovaLinha(elemento.nome, elemento.email, elemento.id)) // colocar os filhos (linha) no pai (tabela)
         })
-});
+    }
+    catch(erro){
+        console.log(erro)
+        window.location.href = '../telas/erro.html'
+    }
+    
+}
+render();
+
